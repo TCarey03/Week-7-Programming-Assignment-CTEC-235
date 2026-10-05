@@ -15,8 +15,21 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  String _currentUsername = 'Guest';
+
+  void _updateUsername(String newName) {
+    setState(() {
+      _currentUsername = newName;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,13 +37,17 @@ class ProfileScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('User Profile Manager'),
       ),
-      body: const Padding(
-        padding: EdgeInsets.all(16.0),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            UserBanner(),
-            SizedBox(height: 20),
-            ProfileForm(),
+            UserBanner(
+              username: _currentUsername,
+            ),
+            const SizedBox(height: 20),
+            ProfileForm(
+              onSaveUsername: _updateUsername,
+            ),
           ],
         ),
       ),
@@ -39,7 +56,12 @@ class ProfileScreen extends StatelessWidget {
 }
 
 class UserBanner extends StatelessWidget {
-  const UserBanner({super.key});
+  final String username;
+
+  const UserBanner({
+    super.key,
+    required this.username,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -48,9 +70,9 @@ class UserBanner extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Text('Welcome, Guest!'),
-            FavoriteButton(),
+          children: [
+            Text('Welcome, $username!'),
+            const FavoriteButton(),
           ],
         ),
       ),
@@ -85,7 +107,12 @@ class _FavoriteButtonState extends State<FavoriteButton> {
 }
 
 class ProfileForm extends StatefulWidget {
-  const ProfileForm({super.key});
+  final ValueChanged<String> onSaveUsername;
+
+  const ProfileForm({
+    super.key,
+    required this.onSaveUsername,
+  });
 
   @override
   State<ProfileForm> createState() => _ProfileFormState();
@@ -124,10 +151,14 @@ class _ProfileFormState extends State<ProfileForm> {
           ElevatedButton(
             onPressed: () {
               if (_formKey.currentState!.validate()) {
+                widget.onSaveUsername(
+                  _usernameController.text.trim(),
+                );
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      'Profile saved: ${_usernameController.text}',
+                      'Profile saved: ${_usernameController.text.trim()}',
                     ),
                   ),
                 );
@@ -140,6 +171,5 @@ class _ProfileFormState extends State<ProfileForm> {
     );
   }
 }
-
   }
 }
